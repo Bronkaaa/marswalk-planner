@@ -1,0 +1,192 @@
+[
+ {
+  "id": "s01",
+  "x": 1426.4,
+  "y": 15.5,
+  "sol": 4491,
+  "lon": 137.3908721,
+  "lat": -4.7927952,
+  "elev": -3694.8,
+  "slope": 10.4,
+  "photo": {
+   "file": "data/photos/s01.jpg",
+   "sol": 4491,
+   "instrument": "NAV_LEFT_B",
+   "date": "2025-03-25",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1449086",
+   "imageid": "NLB_796188908EDR_F1141524NCAM00385M_"
+  }
+ },
+ {
+  "id": "s02",
+  "x": 1251.0,
+  "y": 189.8,
+  "sol": 4514,
+  "lon": 137.3879135,
+  "lat": -4.79573524,
+  "elev": -3673.5,
+  "slope": 9.5,
+  "photo": {
+   "file": "data/photos/s02.jpg",
+   "sol": 4514,
+   "instrument": "NAV_LEFT_B",
+   "date": "2025-04-18",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1457136",
+   "imageid": "NLB_798225865EDR_F1151278NCAM00385M_"
+  }
+ },
+ {
+  "id": "s03",
+  "x": 1021.7,
+  "y": 371.0,
+  "sol": 4548,
+  "lon": 137.3840451,
+  "lat": -4.79879294,
+  "elev": -3650.9,
+  "slope": 8.1,
+  "photo": {
+   "file": "data/photos/s03.jpg",
+   "sol": 4548,
+   "instrument": "NAV_LEFT_B",
+   "date": "2025-05-23",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1470061",
+   "imageid": "NLB_801250954EDR_F1161236NCAM00385M_"
+  }
+ },
+ {
+  "id": "s04",
+  "x": 883.0,
+  "y": 557.0,
+  "sol": 4578,
+  "lon": 137.3817054,
+  "lat": -4.8019306,
+  "elev": -3645.4,
+  "slope": 15.4,
+  "photo": {
+   "file": "data/photos/s04.jpg",
+   "sol": 4578,
+   "instrument": "NAV_LEFT_B",
+   "date": "2025-06-23",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1479702",
+   "imageid": "NLB_803912575EDR_F1170132NCAM00385M_"
+  }
+ },
+ {
+  "id": "s05",
+  "x": 749.2,
+  "y": 751.1,
+  "sol": 4614,
+  "lon": 137.3794477,
+  "lat": -4.80520603,
+  "elev": -3622.5,
+  "slope": 13.4,
+  "photo": {
+   "file": "data/photos/s05.jpg",
+   "sol": 4614,
+   "instrument": "NAV_LEFT_B",
+   "date": "2025-07-30",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1494563",
+   "imageid": "NLB_807108989EDR_F1173024NCAM00385M_"
+  }
+ },
+ {
+  "id": "s06",
+  "x": 875.0,
+  "y": 959.2,
+  "sol": 4673,
+  "lon": 137.3815696,
+  "lat": -4.80871606,
+  "elev": -3606.7,
+  "slope": 4.0,
+  "photo": {
+   "file": "data/photos/s06.jpg",
+   "sol": 4673,
+   "instrument": "NAV_RIGHT_B",
+   "date": "2025-09-28",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1520861",
+   "imageid": "NRB_812346413EDR_F1190846NCAM00556M_"
+  }
+ },
+ {
+  "id": "s07",
+  "x": 909.3,
+  "y": 1204.2,
+  "sol": 4855,
+  "lon": 137.3821479,
+  "lat": -4.81284894,
+  "elev": -3583.0,
+  "slope": 13.1,
+  "photo": {
+   "file": "data/photos/s07.jpg",
+   "sol": 4855,
+   "instrument": "NAV_LEFT_B",
+   "date": "2026-04-03",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1574372",
+   "imageid": "NLB_828492703EDR_F1211968NCAM00385M_"
+  }
+ },
+ {
+  "id": "s08",
+  "x": 957.5,
+  "y": 1441.8,
+  "sol": 4923,
+  "lon": 137.3829616,
+  "lat": -4.81685834,
+  "elev": -3554.2,
+  "slope": 6.9,
+  "photo": {
+   "file": "data/photos/s08.jpg",
+   "sol": 4923,
+   "instrument": "NAV_LEFT_B",
+   "date": "2026-06-12",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1600876",
+   "imageid": "NLB_834531320EDR_F1221944NCAM00385M_"
+  }
+ },
+ {
+  "id": "s09",
+  "x": 1017.1,
+  "y": 1698.3,
+  "sol": 4950,
+  "lon": 137.3839674,
+  "lat": -4.82118531,
+  "elev": -3524.0,
+  "slope": 5.6,
+  "photo": {
+   "file": "data/photos/s09.jpg",
+   "sol": 4950,
+   "instrument": "NAV_LEFT_B",
+   "date": "2026-07-10",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1611754",
+   "imageid": "NLB_836938027EDR_F1231116NCAM00353M_"
+  }
+ },
+ {
+  "id": "s10",
+  "x": 1203.5,
+  "y": 1873.5,
+  "sol": 5008,
+  "lon": 137.3871122,
+  "lat": -4.82414128,
+  "elev": -3493.8,
+  "slope": 9.3,
+  "photo": {
+   "file": "data/photos/s10.jpg",
+   "sol": 5008,
+   "instrument": "NAV_LEFT_B",
+   "date": "2026-09-07",
+   "credit": "NASA/JPL-Caltech",
+   "source": "https://mars.nasa.gov/raw_images/1635679",
+   "imageid": "NLB_842084620EDR_F1242332NCAM00385M_"
+  }
+ }
+]

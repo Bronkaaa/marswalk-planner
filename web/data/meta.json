@@ -1,0 +1,111 @@
+{
+ "name": "Boxwork region, Mount Sharp (Aeolis Mons), Gale crater",
+ "grid": 1024,
+ "cell_m": 2.0,
+ "size_m": 2048,
+ "projection": "Equirectangular, sphere R=3396190 m",
+ "x0": 8142376.0,
+ "y_top": -284076.0,
+ "lon_w": 137.36680810220076,
+ "lon_e": 137.40135910095017,
+ "lat_n": -4.792533945673939,
+ "lat_s": -4.827084944423358,
+ "elev_min": -3823.10986328125,
+ "elev_max": -3349.71044921875,
+ "encoding": {
+  "dem": "float32 LE metres",
+  "slope": "uint8, 0.25 deg/unit",
+  "rough": "uint8, cm",
+  "thermal": "uint8, relative night IR (1-99 pct stretch)"
+ },
+ "minerals": {
+  "grid": 512,
+  "pixel_m": 18,
+  "layers": [
+   {
+    "id": "sulf",
+    "param": "SINDEX2",
+    "name": "Sulfates",
+    "desc": "hydrated sulfate minerals of any kind",
+    "color": [
+     255,
+     214,
+     64
+    ],
+    "lo": 0.00824,
+    "hi": 0.02044,
+    "check_r": 0.48
+   },
+   {
+    "id": "mono",
+    "param": "BD2100_2",
+    "name": "Monohydrated sulfate",
+    "desc": "kieserite-like sulfate with one water per formula unit",
+    "color": [
+     255,
+     128,
+     48
+    ],
+    "lo": 0.002,
+    "hi": 0.01601,
+    "check_r": 0.57
+   },
+   {
+    "id": "hyd",
+    "param": "BD1900_2",
+    "name": "Bound water",
+    "desc": "water-bearing minerals: polyhydrated sulfate, clay, hydrated silica",
+    "color": [
+     70,
+     170,
+     255
+    ],
+    "lo": 0.0,
+    "hi": 0.01183,
+    "check_r": 0.0
+   },
+   {
+    "id": "clay",
+    "param": "D2300",
+    "name": "Fe/Mg clay",
+    "desc": "iron-magnesium clay minerals (smectite)",
+    "color": [
+     70,
+     230,
+     130
+    ],
+    "lo": 0.0,
+    "hi": 0.00778,
+    "check_r": 0.0
+   },
+   {
+    "id": "pyx",
+    "param": "HCPINDEX2",
+    "name": "Pyroxene",
+    "desc": "unaltered basaltic material such as dark sand",
+    "color": [
+     200,
+     110,
+     255
+    ],
+    "lo": 0.0,
+    "hi": 0.01068,
+    "check_r": 0.0
+   }
+  ],
+  "scenes": [
+   "FRT0000B6F1",
+   "FRT000058A3"
+  ],
+  "encoding": "uint8 per layer, mean of both scenes; 0 = scene-typical or below, 255 = 99.5th percentile"
+ },
+ "sources": {
+  "dem": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_DEM_Mosaic_1m_v3.tif",
+  "ortho": "https://asc-pds-services.s3.us-west-2.amazonaws.com/mosaic/Mars/MSL/MSL_Gale_Orthophoto_Mosaic_25cm_v3.tif",
+  "thermal": "https://trek.nasa.gov/tiles/Mars/EQ/THEMIS_NightIR_ControlledMosaics_100m_v2_oct2018/1.0.0/default/default028mm",
+  "minerals": "https://pds-geosciences.wustl.edu/mro/mro-m-crism-5-rdr-mptargeted-v1/mrocr_4001/mtrdr/2008/2008_191/frt0000b6f1/frt0000b6f1_07_sr165j_mtr3.lbl",
+  "waypoints": "https://mars.nasa.gov/mmgis-maps/MSL/Layers/json/MSL_waypoints.json",
+  "weather": "https://mars.nasa.gov/rss/api/?feed=weather&category=msl&feedtype=json",
+  "raw_images": "https://mars.nasa.gov/api/v1/raw_image_items/"
+ }
+}

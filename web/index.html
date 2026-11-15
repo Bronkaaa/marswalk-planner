@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Marswalk Planner – Boxwork region, Mount Sharp</title>
+<meta name="description" content="3D planning and navigation tool for a crewed Marswalk in Gale crater, built on NASA data for the NASA Space Apps Challenge 2026.">
+<meta name="ai-generated" content="Source code and data pipeline were written with an AI coding assistant (Claude, Anthropic) and reviewed by the team.">
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="css/style.css">
+<script type="importmap">{ "imports": { "three": "./vendor/three.module.js" } }</script>
+</head>
+<body>
+<header>
+  <div class="brand"><b>Marswalk Planner</b><span class="site" id="siteName">loading…</span></div>
+  <nav class="modes" id="modes">
+    <button data-mode="orbit" class="on" title="Plan the EVA on the 3D map">Plan</button>
+    <button data-mode="fly" title="Fly along the planned route">Fly-over</button>
+    <button data-mode="hud" title="Helmet view while walking the route">Helmet view</button>
+  </nav>
+  <div class="right">
+    <span class="pill" id="status">—</span>
+    <button class="ghost" id="aboutBtn">Data &amp; assumptions</button>
+  </div>
+</header>
+
+<aside id="left">
+  <details class="sec" open>
+    <summary>Map layer<span class="gap"></span></summary>
+    <div class="body">
+      <div id="layers" class="layers"></div>
+      <label class="row" id="mineralRow" hidden>Mineral <select id="mineralSel"></select></label>
+      <div id="legend" class="legend"></div>
+      <details class="more">
+        <summary>Display options</summary>
+        <label class="row">Layer opacity <input type="range" id="alpha" min="0.15" max="1" step="0.05" value="0.6"></label>
+        <label class="row">Vertical exaggeration
+          <select id="exag"><option value="1">1×</option><option value="1.5" selected>1.5×</option><option value="2.5">2.5×</option></select>
+        </label>
+        <label class="row check"><input type="checkbox" id="showTraverse" checked> Curiosity track (sols <span id="solRange"></span>)</label>
+      </details>
+    </div>
+  </details>
+  <details class="sec">
+    <summary>Sun &amp; shadows<span class="sum" id="sunSum"></span></summary>
+    <div class="body">
+      <label class="row">Time <input type="range" id="sunTime" step="1"></label>
+      <div id="sunInfo" class="kv"></div>
+      <label class="row check"><input type="checkbox" id="sunFollow" checked> Follow the EVA clock</label>
+      <p class="hint">Shadows are computed from the elevation model for this time of day and season.</p>
+    </div>
+  </details>
+  <details class="sec">
+    <summary>Suit &amp; safety limits<span class="gap"></span></summary>
+    <div class="body">
+      <div id="params" class="params"></div>
+      <p class="hint">Planning assumptions. Change them and the map, route and budget update.</p>
+    </div>
+  </details>
+  <details class="sec">
+    <summary>Conditions<span class="sum" id="condSum"></span></summary>
+    <div class="body">
+      <div id="weather" class="kv"></div>
+      <canvas id="spark" width="260" height="56"></canvas>
+      <p class="hint" id="weatherNote"></p>
+      <div id="radiation" class="kv"></div>
+    </div>
+  </details>
+</aside>
+
+<main id="view">
+  <div id="gl"></div>
+  <div id="readout" class="readout">Move the cursor over the terrain</div>
+  <div id="toolHint" class="toolhint" hidden></div>
+  <div id="loading" class="loading">Loading Mars data…</div>
+
+  <div id="hud" class="hud" hidden>
+    <div class="compass"><div id="tape" class="tape"></div><div class="needle"></div><div id="hdg" class="hdg">000°</div></div>
+    <div class="hudbox tl">
+      <div class="lbl">EVA ELAPSED</div><div class="big" id="hElapsed">0:00</div>
+      <div class="bar"><i id="hBar"></i></div><div class="small" id="hLeft"></div>
+    </div>
+    <div class="hudbox tr">
+      <div class="lbl" id="hNextLbl">NEXT</div><div class="big" id="hNext">—</div>
+      <div class="small" id="hNextInfo"></div>
+    </div>
+    <div class="hudbox bl">
+      <div class="lbl">TERRAIN</div><div class="mid" id="hTerrain">—</div>
+    </div>
+    <div class="hudbox br">
+      <div class="lbl">WALK-BACK</div><div class="mid" id="hWb">—</div>
+      <div class="lbl">MARGIN</div><div class="mid" id="hMargin">—</div>
+      <div class="small" id="hDose"></div>
+    </div>
+    <div class="hudphoto" id="hPhoto" hidden><img alt=""><span></span></div>
+  </div>
+  <div id="alert" class="alert" hidden></div>
+
+  <div class="playbar">
+    <button id="play" title="Play / pause">▶</button>
+    <input type="range" id="scrub" min="0" max="1000" value="0">
+    <span id="clock">0:00</span>
+    <button id="storm" class="warn" title="Simulate a solar particle event at the current position">Storm drill</button>
+  </div>
+</main>
+
+<aside id="rightp">
+  <details class="sec" open>
+    <summary>Route<span class="gap"></span></summary>
+    <div class="body">
+      <div class="tools">
+        <button id="toolSci" title="Add your own science stop, e.g. on a mineral signal">Add sample site</button>
+        <button id="toolWp" title="Add a pass-through point to steer the route">Add waypoint</button>
+        <button id="toolHab" title="Click the terrain to move the habitat">Move habitat</button>
+        <button id="optimize" title="Reorder the stops for the shortest walking time">Best order</button>
+      </div>
+      <ol id="routeList" class="routelist"></ol>
+      <div class="row" style="margin-top:10px"><button id="cuffBtn" title="Printable wrist checklist of this EVA">Cuff checklist</button><button id="clear">Clear route</button></div>
+    </div>
+  </details>
+  <details class="sec" open>
+    <summary>EVA budget<span class="gap"></span></summary>
+    <div class="body">
+      <label class="row" style="margin-top:0">Start (local solar time) <input type="time" id="startTime" value="09:30"></label>
+      <div id="summary" class="kv big"></div>
+      <ul id="checks" class="checks"></ul>
+      <details class="more">
+        <summary id="checksOkSum">Details</summary>
+        <ul id="checksOk" class="checks" style="margin-top:2px"></ul>
+        <div id="summaryMore" class="kv" style="margin-top:8px"></div>
+      </details>
+    </div>
+  </details>
+  <details class="sec" open>
+    <summary>Science stops<span class="gap"></span></summary>
+    <div class="body">
+      <p class="hint" style="margin-top:0">Places where Curiosity stood, each with a ground photo. Click for details.</p>
+      <div id="stops" class="stops"></div>
+    </div>
+  </details>
+</aside>
+
+<footer>
+  <canvas id="profile"></canvas>
+</footer>
+
+<div id="card" class="card" hidden>
+  <button class="x" id="cardClose">✕</button>
+  <img id="cardImg" alt="">
+  <div class="cardbody">
+    <h4 id="cardTitle"></h4>
+    <p id="cardTask"></p>
+    <p class="hint" id="cardMeta"></p>
+    <button id="cardToggle"></button>
+  </div>
+</div>
+
+<dialog id="about">
+  <h2>Data &amp; assumptions</h2>
+  <div id="aboutBody"></div>
+  <form method="dialog"><button>Close</button></form>
+</dialog>
+
+<dialog id="cuffDlg">
+  <div class="cuffhead"><h2>Cuff checklist</h2>
+    <span class="hint">One card per leg, sized for a suit wrist. Print or save as PDF.</span>
+    <button id="cuffPrint">Print / save PDF</button><form method="dialog"><button>Close</button></form></div>
+  <div id="cuffBody" class="cuff"></div>
+</dialog>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>
