@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Marswalk Planner – project demo (SPACE_R)</title>
+<meta name="ai-generated" content="Slides prepared with an AI assistant (Claude, Anthropic). All images are screenshots of the team's app showing NASA data.">
+<style>
+  @page { size: 1280px 720px; margin: 0; }
+  :root { --paper: #f5f4ef; --ink: #1c1b19; --muted: #6a665e; --line: #d2cfc6; --rust: #a9411b; --mono: ui-monospace, "Cascadia Mono", Consolas, monospace; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #d9d6cd; }
+  body { font: 22px/1.4 "Segoe UI", "Helvetica Neue", Arial, sans-serif; color: var(--ink); }
+  .slide { width: 1280px; height: 720px; background: var(--paper); position: relative; overflow: hidden; padding: 56px 64px 60px; page-break-after: always; break-after: page; margin: 0 auto 24px; display: flex; flex-direction: column; }
+  @media print { html, body { background: none; } .slide { margin: 0; } }
+  .kicker { font: 600 15px var(--mono); letter-spacing: .08em; color: var(--rust); text-transform: uppercase; margin-bottom: 10px; }
+  h1 { font-size: 76px; line-height: 1; margin: 0 0 18px; letter-spacing: -.02em; }
+  h2 { font-size: 42px; line-height: 1.1; margin: 0 0 22px; letter-spacing: -.01em; max-width: 1000px; }
+  p { margin: 0 0 14px; } .lead { font-size: 27px; max-width: 780px; }
+  ul { margin: 0; padding: 0; list-style: none; } li { padding: 9px 0 9px 26px; position: relative; border-bottom: 1px solid var(--line); }
+  li::before { content: ""; position: absolute; left: 2px; top: 20px; width: 10px; height: 10px; background: var(--rust); }
+  li b { font-weight: 600; } small, .small { font-size: 16px; color: var(--muted); }
+  .foot { position: absolute; left: 64px; right: 64px; bottom: 22px; display: flex; justify-content: space-between; font: 13px var(--mono); color: var(--muted); border-top: 1px solid var(--line); padding-top: 8px; }
+  .cols { display: grid; gap: 36px; flex: 1; min-height: 0; align-items: start; }
+  img { display: block; width: 100%; border: 1px solid var(--ink); }
+  figure { margin: 0; } figcaption { font: 13px var(--mono); color: var(--muted); margin-top: 6px; }
+  .num { font: 600 64px/1 var(--mono); color: var(--rust); } .numrow { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; margin-top: 26px; }
+  .numrow div { border-top: 2px solid var(--ink); padding-top: 12px; } .numrow span { display: block; font-size: 19px; margin-top: 6px; }
+  .dark { background: var(--ink); color: var(--paper); } .dark .foot { color: #a7a299; border-color: #45423d; } .dark .kicker { color: #e2703f; }
+  .dark small, .dark .small { color: #b5b0a5; }
+  table { border-collapse: collapse; width: 100%; font-size: 18px; } td { padding: 7px 10px 7px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { font-weight: 600; white-space: nowrap; } td:last-child { color: var(--muted); }
+  .link { font: 20px var(--mono); }
+</style>
+</head>
+<body>
+
+<!-- 1 -->
+<section class="slide dark" style="padding:0">
+  <img src="img/title.jpg" alt="" style="position:absolute;inset:0;height:100%;object-fit:cover;border:0;opacity:.6">
+  <div style="position:relative;padding:70px 64px;display:flex;flex-direction:column;height:100%">
+    <div class="kicker">NASA Space Apps Challenge 2026 · Aachen</div>
+    <h1>Marswalk Planner</h1>
+    <p class="lead" style="font-size:32px">Plan the walk before you open the hatch.</p>
+    <div style="margin-top:auto">
+      <p style="margin:0"><b>Team SPACE_R</b> · Roman Juhls</p>
+      <p class="small" style="margin:4px 0 0">Challenge: a layered, integrated view of a Mars location or route that helps a human explorer plan and carry out a Marswalk</p>
+    </div>
+  </div>
+  <div class="foot" style="border:0"><span>Background: the app's 3D terrain of Mount Sharp, Gale crater (NASA HiRISE data)</span><span>1 / 7</span></div>
+</section>
+
+<!-- 2 -->
+<section class="slide">
+  <div class="kicker">The problem</div>
+  <h2>On Mars, a walk has a hard time limit and no rescue.</h2>
+  <p class="lead">A suit lasts a fixed number of hours. The only safe place is the habitat. Every step away from it has to be walked back.</p>
+  <div class="numrow">
+    <div><div class="num">7 h</div><span>of suit time, including the reserve</span></div>
+    <div><div class="num">20°</div><span>slopes steeper than this stop a suited walker</span></div>
+    <div><div class="num">7</div><span>NASA data sources a crew would need – today in separate archives, built for scientists</span></div>
+  </div>
+  <p class="small" style="margin-top:22px">Suit time and slope limit are our planning assumptions; both can be changed in the app.</p>
+  <div class="foot"><span>Marswalk Planner · SPACE_R</span><span>2 / 7</span></div>
+</section>
+
+<!-- 3 -->
+<section class="slide">
+  <div class="kicker">The solution</div>
+  <h2 style="margin-bottom:14px">One 3D map that tells the crew where they can walk and whether they get home.</h2>
+  <div class="cols" style="grid-template-columns: 1fr">
+    <figure><img src="img/plan.jpg" style="height:428px;width:auto" alt="Marswalk Planner: 3D terrain with safe and no-go zones, planned route, EVA budget and elevation profile">
+      <figcaption>Green = safe to walk, yellow = caution, red = no-go. Right: the route, its time budget and the GO / NO-GO verdict. Below: elevation profile.</figcaption></figure>
+  </div>
+  <div class="foot"><span>Marswalk Planner · SPACE_R</span><span>3 / 7</span></div>
+</section>
+
+<!-- 4 -->
+<section class="slide">
+  <div class="kicker">NASA data at the core</div>
+  <h2>Seven NASA data sources, one place, walking scale.</h2>
+  <div class="cols" style="grid-template-columns: 1.05fr 1fr">
+    <table>
+      <tr><td>MRO HiRISE image</td><td>what the ground looks like, 0.25 m per pixel</td></tr>
+      <tr><td>MRO HiRISE elevation</td><td>slopes, steps, safe routes, shadows</td></tr>
+      <tr><td>Odyssey THEMIS</td><td>night temperature: rock or loose sand</td></tr>
+      <tr><td>MRO CRISM</td><td>minerals seen from orbit – where to sample</td></tr>
+      <tr><td>Curiosity track + Navcam</td><td>a real ground photo at every stop</td></tr>
+      <tr><td>Curiosity REMS</td><td>weather, season, sunrise and sunset</td></tr>
+      <tr><td>Curiosity RAD</td><td>radiation dose of the walk</td></tr>
+    </table>
+    <figure><img src="img/minerals.jpg" alt="Mineral layer on the 3D terrain">
+      <figcaption>Mineral layer (CRISM): yellow = sulfates, orange = monohydrated sulfate, blue = bound water. Signals here are weak – a hint where to sample, not proof.</figcaption></figure>
+  </div>
+  <div class="foot"><span>Marswalk Planner · SPACE_R</span><span>4 / 7</span></div>
+</section>
+
+<!-- 5 -->
+<section class="slide">
+  <div class="kicker">Rehearse it</div>
+  <h2>Walk the route before the walk – and practise the way out.</h2>
+  <div class="cols" style="grid-template-columns: 2.193fr 1.357fr; flex: 0 0 auto">
+    <figure><img src="img/helmet.jpg" alt="Helmet view along the route">
+      <figcaption>Helmet view: heading, next stop, terrain, sun, walk-back time and remaining margin.</figcaption></figure>
+    <figure><img src="img/storm.jpg" alt="Storm drill: fastest safe way back to the habitat">
+      <figcaption>Storm drill: a simulated solar storm – the red line is the fastest safe way back from where you are.</figcaption></figure>
+  </div>
+  <p class="small" style="margin-top:10px">The sun moves with the mission clock; the terrain casts shadows computed for the current Mars season.</p>
+  <div class="foot"><span>Marswalk Planner · SPACE_R</span><span>5 / 7</span></div>
+</section>
+
+<!-- 6 -->
+<section class="slide">
+  <div class="kicker">Take it outside</div>
+  <h2>The plan prints as a wrist checklist, like Apollo crews wore on the Moon.</h2>
+  <div class="cols" style="grid-template-columns: 300px 300px 1fr">
+    <figure><img src="img/cuff1.jpg" alt="Cuff checklist: overview card"></figure>
+    <figure><img src="img/cuff2.jpg" alt="Cuff checklist: leg card"></figure>
+    <ul>
+      <li><b>One card per leg:</b> headings, distances, arrival time</li>
+      <li><b>The task at each stop</b> and what orbit says about its minerals</li>
+      <li><b>Walk-back time</b> from every stop</li>
+      <li><b>BINGO:</b> the latest moment to leave and still get home with the reserve untouched</li>
+    </ul>
+  </div>
+  <div class="foot"><span>Marswalk Planner · SPACE_R</span><span>6 / 7</span></div>
+</section>
+
+<!-- 7 -->
+<section class="slide dark">
+  <div class="kicker">Why it matters</div>
+  <h2>The data to plan a safe Marswalk already exists. It only has to become one picture a crew can act on.</h2>
+  <ul style="max-width:900px">
+    <li style="border-color:#45423d"><b>Works today:</b> runs in a browser, offline once loaded</li>
+    <li style="border-color:#45423d"><b>Works elsewhere:</b> the pipeline cuts any area of the Gale mosaics by changing two coordinates</li>
+    <li style="border-color:#45423d"><b>Next:</b> more sites, a rover drop-off for longer range, live space-weather alerts</li>
+  </ul>
+  <div style="margin-top:auto">
+    <p class="link" style="margin:0">Try it: bronkaaa.github.io/marswalk-planner</p>
+    <p class="link" style="margin:2px 0 10px">Code: github.com/Bronkaaa/marswalk-planner</p>
+    <p class="small" style="margin:0">All maps, images and measurements are NASA data. App code and these slides were prepared with an AI assistant (Claude, Anthropic).</p>
+  </div>
+  <div class="foot"><span>Marswalk Planner · SPACE_R · Roman Juhls</span><span>7 / 7</span></div>
+</section>
+
+</body>
+</html>
