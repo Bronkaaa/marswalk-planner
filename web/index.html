@@ -20,6 +20,7 @@
   </nav>
   <div class="right">
     <span class="pill" id="status">—</span>
+    <button class="ghost" id="guideBtn">Guide</button>
     <button class="ghost" id="aboutBtn">Data &amp; assumptions</button>
   </div>
 </header>
@@ -100,7 +101,8 @@
     <button id="play" title="Play / pause">▶</button>
     <input type="range" id="scrub" min="0" max="1000" value="0">
     <span id="clock">0:00</span>
-    <button id="storm" class="warn" title="Simulate a solar particle event at the current position">Storm drill</button>
+    <select id="drillSel" title="Emergency to rehearse at the current position"><option value="storm">Solar storm</option><option value="leak">Suit leak</option><option value="injury">Injured crew member</option></select>
+    <button id="storm" class="warn" title="Rehearse this emergency at the current position on the route">Run drill</button>
   </div>
 </main>
 
@@ -115,7 +117,7 @@
         <button id="optimize" title="Reorder the stops for the shortest walking time">Best order</button>
       </div>
       <ol id="routeList" class="routelist"></ol>
-      <div class="row" style="margin-top:10px"><button id="cuffBtn" title="Printable wrist checklist of this EVA">Cuff checklist</button><button id="clear">Clear route</button></div>
+      <div class="row" style="margin-top:10px"><button id="cuffBtn" title="Printable wrist checklist of this EVA">Cuff checklist</button><button id="exampleBtn" title="Load the example mission">Example</button><button id="clear">Clear</button></div>
     </div>
   </details>
   <details class="sec" open>
@@ -159,6 +161,18 @@
   <h2>Data &amp; assumptions</h2>
   <div id="aboutBody"></div>
   <form method="dialog"><button>Close</button></form>
+</dialog>
+
+<dialog id="intro">
+  <h2>Plan a Marswalk in four steps</h2>
+  <p class="hint" style="margin:0 0 6px">A 2 × 2 km area on Mount Sharp, Gale crater, built from NASA orbiter and rover data. An example mission is already loaded.</p>
+  <ol class="steps">
+    <li><b>Choose where to go.</b> Add science stops from the list on the right, or switch the map layer to “Minerals” and place your own sample site.</li>
+    <li><b>Read the verdict.</b> The app finds the fastest safe route on foot and checks it against suit time, walk-back, daylight and radiation: GO or NO-GO, top right.</li>
+    <li><b>Rehearse the walk.</b> “Fly-over” and “Helmet view” take you along the route. Press play, or drag the timeline.</li>
+    <li><b>Practise the way out.</b> “Run drill” rehearses a solar storm, a suit leak or an injured crew member from wherever you are. “Cuff checklist” prints the plan for your wrist.</li>
+  </ol>
+  <form method="dialog"><button id="introGo" class="on">Start planning</button></form>
 </dialog>
 
 <dialog id="cuffDlg">

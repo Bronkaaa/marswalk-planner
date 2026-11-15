@@ -151,3 +151,8 @@ dialog td, dialog th { text-align: left; padding: 5px 8px 5px 0; border-bottom: 
 .cuffhead { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; } .cuffhead h2 { margin: 0; } .cuffhead .hint { flex: 1; margin: 0; }
 body.immersive { grid-template-columns: 0 1fr 0; } body.immersive aside { display: none; } body.immersive .card { right: 16px; }
 @media (max-width: 1100px) { body { grid-template-columns: 230px 1fr 260px; } }
+#intro { max-width: 620px; }
+.steps { list-style: none; counter-reset: st; margin: 14px 0 18px; padding: 0; }
+.steps li { counter-increment: st; position: relative; padding: 9px 0 9px 44px; border-top: 1px solid var(--line); }
+.steps li::before { content: counter(st); position: absolute; left: 0; top: 7px; font: 600 24px var(--mono); color: var(--accent); }
+.playbar select { padding: 3px 4px; }

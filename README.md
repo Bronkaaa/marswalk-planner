@@ -42,7 +42,13 @@ To publish, upload the contents of `web/` to any static host (GitHub Pages, Netl
 - **Science stops with real ground photos**: each stop is a place Curiosity stood, shown
   with a Navcam image from that sol.
 - **Fly-over** and **Helmet view** modes along the planned route.
-- **Storm drill**: simulated solar particle event, shows the fastest safe way back.
+- **Emergency drills**: solar storm, suit leak or injured crew member at any point of the
+  route; each shows the fastest safe way back and whether the crew makes it.
+- **Safe range**: a layer that shows, for the current mission time, how long the crew
+  could still stay at each place and get home with the reserve; it shrinks as time passes.
+- **Hazard distance**: the budget reports how much of the route passes within 4 m of
+  no-go terrain.
+- The plan (habitat, route, start time) is kept in the browser between visits.
 
 ## Data
 

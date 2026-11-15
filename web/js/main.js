@@ -28,6 +28,7 @@ const TASKS = [
 const LAYERS = [
   { id: 'none', name: 'Optical', sub: 'HiRISE orthophoto, 0.5 m/px (MRO)' },
   { id: 'trav', name: 'Traversability', sub: 'go / caution / no-go from slope + step height' },
+  { id: 'range', name: 'Safe range', sub: 'how long you could still stay at each place and get home with the reserve – follows the mission clock' },
   { id: 'slope', name: 'Slope', sub: 'from HiRISE stereo DEM, 2 m grid' },
   { id: 'rough', name: 'Step height', sub: 'local relief of the 1 m DEM' },
   { id: 'thermal', name: 'Thermal (night IR)', sub: 'THEMIS, 100 m/px (Mars Odyssey): warm = rocky, cold = loose' },
@@ -81,12 +82,35 @@ async function load() {
   S.overlay.width = S.overlay.height = n;
 
   // default mission: habitat on the flat terrace below the boxwork field, four stops up-slope
-  S.hab = flatSpot(1250, 200, 120);
-  S.route = ['s03', 's05', 's06', 's07'].filter((id) => S.sites.some((s) => s.id === id)).map((id) => ({ type: 'stop', id }));
+  if (!loadPlan()) exampleMission();
   buildUI();
   recompute(true);
   $('#loading').remove();
+  let seen = false; try { seen = !!localStorage.getItem(INTRO_KEY); } catch { /* storage blocked */ }
+  if (!seen) $('#intro').showModal();
   window.__app = S; // handy for debugging / automated checks
+}
+
+// the plan survives a reload: habitat, route and start time are kept in the browser
+const PLAN_KEY = 'marswalk.plan.v1', INTRO_KEY = 'marswalk.intro.v1';
+function exampleMission() {
+  S.hab = flatSpot(1250, 200, 120);
+  S.route = ['s03', 's05', 's06', 's07'].filter((id) => S.sites.some((s) => s.id === id)).map((id) => ({ type: 'stop', id }));
+}
+function savePlan() {
+  try { localStorage.setItem(PLAN_KEY, JSON.stringify({ hab: S.hab, route: S.route, start: $('#startTime').value, wp: S.wpCount, sci: S.sciCount })); } catch { /* storage blocked */ }
+}
+function loadPlan() {
+  try {
+    const p = JSON.parse(localStorage.getItem(PLAN_KEY));
+    const ok = (v) => typeof v === 'number' && isFinite(v) && v >= 0 && v <= S.meta.size_m;
+    if (!p || !p.hab || !ok(p.hab.x) || !ok(p.hab.y) || !Array.isArray(p.route)) return false;
+    S.hab = { x: p.hab.x, y: p.hab.y };
+    S.route = p.route.filter((it) => it && (it.type === 'wp' ? ok(it.x) && ok(it.y) : S.sites.some((s) => s.id === it.id)));
+    if (/^\d\d:\d\d$/.test(p.start || '')) $('#startTime').value = p.start;
+    S.wpCount = p.wp | 0; S.sciCount = p.sci | 0;
+    return true;
+  } catch { return false; }
 }
 
 /** flattest open patch (20 m) within r metres of (cx, cy) */
@@ -151,6 +175,21 @@ function shadeStats() {
   ev.shade = flags; ev.shadeSec = sec; ev.sunLowest = lowest * 180 / Math.PI;
 }
 
+/** route samples that pass within 4 m (2 cells) of no-go terrain */
+function hazardStats() {
+  const ev = S.ev, sm = ev.samples, P = S.planner, n = P.n, near = new Uint8Array(sm.x.length);
+  let m = 0;
+  for (let i = 0; i < sm.x.length; i++) {
+    const k = P.idx(sm.x[i], sm.y[i]), ci = k % n, cj = (k - ci) / n;
+    scan: for (let dj = -2; dj <= 2; dj++) for (let di = -2; di <= 2; di++) {
+      const a = ci + di, b = cj + dj;
+      if (a >= 0 && b >= 0 && a < n && b < n && P.cls[b * n + a] === 2) { near[i] = 1; break scan; }
+    }
+    if (i && near[i]) m += sm.dist[i] - sm.dist[i - 1];
+  }
+  ev.near = near; ev.nearM = m;
+}
+
 // ------------------------------------------------------------------ mission
 const itemPos = (it) => (it.type === 'stop' ? S.sites.find((s) => s.id === it.id) : it);
 const itemName = (it) => (it.type === 'stop' ? (() => { const s = itemPos(it); return `${s.label} ${s.name}`; })() : it.name);
@@ -179,7 +218,8 @@ function recompute(habMoved = false) {
   setStorm(false);
   S.scene.setRoute(S.ev ? S.ev.samples : null);
   updateMarkers(); renderRoute(); renderSummary(); renderStops(); drawProfile(); updateFollow();
-  if (S.layer === 'walkback' || S.layer === 'trav') drawOverlay();
+  if (S.layer === 'walkback' || S.layer === 'trav' || S.layer === 'range') drawOverlay();
+  savePlan();
   if (dropped.length) toast(`No safe path to: ${dropped.join(', ')} – removed from the route.`);
 }
 
@@ -234,6 +274,7 @@ const ramp = (stops) => (t) => {
 const R_HAZ = ramp([[0, [40, 190, 100]], [0.25, [250, 220, 50]], [0.5, [240, 60, 50]], [1, [150, 40, 200]]]);
 const R_THERM = ramp([[0, [40, 80, 220]], [0.5, [240, 240, 235]], [1, [225, 60, 40]]]);
 const R_ELEV = ramp([[0, [50, 30, 110]], [0.25, [40, 110, 180]], [0.5, [60, 180, 140]], [0.75, [220, 220, 90]], [1, [250, 250, 240]]]);
+const R_RANGE = ramp([[0, [235, 60, 50]], [0.33, [250, 205, 50]], [1, [40, 185, 100]]]);
 const R_TIME = ramp([[0, [70, 220, 255]], [0.4, [90, 230, 120]], [0.7, [255, 215, 60]], [1, [235, 70, 160]]]);
 const css = (c) => `rgb(${c.map(Math.round).join(',')})`;
 const gradCss = (r) => `linear-gradient(90deg, ${Array.from({ length: 11 }, (_, i) => css(r(i / 10))).join(',')})`;
@@ -241,7 +282,9 @@ const gradCss = (r) => `linear-gradient(90deg, ${Array.from({ length: 11 }, (_, 
 function drawOverlay() {
   const P = S.planner, n = P.n, id = S.layer;
   if (id === 'none') { S.scene.setOverlay(null, 0); renderLegend(); return; }
-  if (id === 'walkback' && !P.walkback) P.computeWalkback(P.nearestOpen(P.idx(S.hab.x, S.hab.y)));
+  S.rangeT = S.t;
+  const usableS = (P.params.evaLimitH * 60 - P.params.reserveMin) * 60, leakS = P.params.reserveMin * 60;
+  if ((id === 'walkback' || id === 'range') && !P.walkback) P.computeWalkback(P.nearestOpen(P.idx(S.hab.x, S.hab.y)));
   const ctx = S.overlay.getContext('2d'), im = ctx.createImageData(n, n), d = im.data;
   const { elev_min: e0, elev_max: e1 } = S.meta;
   const CLS = [[53, 224, 138, 105], [255, 194, 26, 215], [235, 50, 50, 235]];
@@ -264,6 +307,16 @@ function drawOverlay() {
       c = R_ELEV((P.dem[k] - e0) / (e1 - e0));
       const z = Math.floor(P.dem[k] / 10);
       if ((k % n < n - 1 && Math.floor(P.dem[k + 1] / 10) !== z) || (k < n * n - n && Math.floor(P.dem[k + n] / 10) !== z)) c = [20, 20, 30];
+    } else if (id === 'range') {
+      // margin = suit time left after walking home from this cell at the current mission time, reserve untouched
+      const wb = P.walkback[k], wbE = P.walkback[k + 1] ?? wb, wbS = P.walkback[k + n] ?? wb;
+      if (!isFinite(wb)) { c = [60, 10, 10]; a = 235; }
+      else if ((wb <= leakS) !== (wbE <= leakS) || (wb <= leakS) !== (wbS <= leakS)) c = [255, 255, 255];
+      else {
+        const m = (usableS - S.t - wb) / 60;
+        if (m < 0) { c = [120, 15, 15]; a = 240; }
+        else { c = R_RANGE(m / 180); if (Math.floor(m / 30) !== Math.floor((usableS - S.t - wbE) / 1800)) c = [15, 20, 30]; }
+      }
     } else if (id === 'walkback') {
       const m = P.walkback[k] / 60;
       if (!isFinite(m)) { c = [60, 10, 10]; a = 235; }
@@ -291,6 +344,7 @@ function renderLegend() {
     rough: grad(R_HAZ, '0 m', '1 m+'),
     thermal: grad(R_THERM, 'cold at night – dust, sand', 'warm – bedrock'),
     elev: grad(R_ELEV, `${Math.round(S.meta.elev_min)} m`, `${Math.round(S.meta.elev_max)} m`),
+    range: grad(R_RANGE, '0 min', '3 h or more') + `Time you could still stay at a place and get home with the reserve, at mission time ${fmtT(S.t)} h. Lines every 30 min · dark red = too far to return · inside the white line a suit leak is survivable (walk-back shorter than the reserve).`,
     walkback: grad(R_TIME, '0 min', '60 min+') + 'Lines every 5 min · dark = not reachable on foot',
   }[S.layer];
 }
@@ -341,10 +395,14 @@ function buildUI() {
   $('#toolHab').onclick = () => setTool(S.tool === 'hab' ? null : 'hab');
   $('#optimize').onclick = optimizeOrder;
   $('#clear').onclick = () => { S.route = []; recompute(); };
-  $('#startTime').onchange = () => { renderSummary(); updateSun(true); };
+  $('#startTime').onchange = () => { renderSummary(); updateSun(true); savePlan(); };
   $('#play').onclick = () => setPlaying(!S.playing);
   $('#scrub').oninput = (e) => { if (S.ev) { S.t = e.target.value / 1000 * S.ev.time; setStorm(false); updateFollow(); } };
   $('#storm').onclick = () => setStorm(!S.storm);
+  $('#drillSel').onchange = () => { if (S.storm) setStorm(true); };
+  $('#exampleBtn').onclick = () => { exampleMission(); recompute(true); };
+  $('#guideBtn').onclick = () => $('#intro').showModal();
+  $('#intro').addEventListener('close', () => { try { localStorage.setItem(INTRO_KEY, '1'); } catch { /* storage blocked */ } });
   $('#cardClose').onclick = () => ($('#card').hidden = true);
   $('#aboutBtn').onclick = () => { renderAbout(); $('#about').showModal(); };
 
@@ -439,12 +497,13 @@ function renderSummary() {
     ['Radiation dose (GCR)', `${ev.dose.toFixed(3)} mSv`],
   ]);
   const usable = ev.limit - ev.reserve;
-  shadeStats();
+  shadeStats(); hazardStats();
   const c = [
     [ev.time <= usable ? '' : 'bad', `EVA ${fmtT(ev.time)} h of ${fmtT(usable)} h usable (${P.evaLimitH} h suit − ${P.reserveMin} min reserve)`],
     [ev.minMargin >= 0 ? '' : 'bad', ev.minMargin >= 0 ? `Walk-back always possible – tightest margin ${fmtMin(ev.minMargin)}, farthest point ${fmtMin(ev.maxWalkback)} from the habitat` : `Walk-back NOT covered: ${fmtMin(-ev.minMargin)} short at the worst point`],
     [start >= sunrise + 60 && end <= sunset - 30 ? '' : 'bad', end <= sunset - 30 ? (start >= sunrise + 60 ? `Daylight: back ${Math.round(sunset - end)} min before sunset` : 'Start is less than 1 h after sunrise (cold, low sun)') : 'Return after (or within 30 min of) sunset'],
     [ev.shadeSec > 600 || ev.sunLowest < 10 ? 'warnc' : '', ev.shadeSec > 60 ? `${fmtMin(ev.shadeSec)} of the EVA in terrain shadow (colder, low contrast) · sun at least ${Math.max(0, ev.sunLowest).toFixed(0)}° high` : `In sunlight the whole EVA · sun at least ${Math.max(0, ev.sunLowest).toFixed(0)}° high`],
+    [ev.nearM > 0 ? 'warnc' : '', ev.nearM > 0 ? `${ev.nearM.toFixed(0)} m of the route pass within 4 m of no-go terrain` : 'Route keeps more than 4 m away from no-go terrain'],
     [ev.caution > 0 ? 'warnc' : '', ev.caution > 0 ? `${ev.caution.toFixed(0)} m of the route on caution terrain (yellow)` : 'Whole route on easy terrain'],
   ];
   // problems and cautions stay visible; passed checks fold away
@@ -527,7 +586,8 @@ function renderAbout() {
    <li>No-go above ${P.maxSlope}° slope or ${P.maxStep} m step height; caution above half of that. These are planning values, not NASA suit requirements.</li>
    <li>Walking speed: Tobler’s hiking function scaled to ${P.flatSpeed} m/s on level ground, slowed by step height, cross-slope and cold (loose) ground.</li>
    <li>Walk-back: fastest walk to the habitat from every cell (Dijkstra). A route is GO only if consumables minus reserve cover the walk-back from every point.</li>
-   <li>Storm drill: simulated solar particle event with a hypothetical ${STORM_FACTOR}× dose rate. No real space-weather data is used.</li>
+   <li>Drills are simulations: the solar storm uses a hypothetical ${STORM_FACTOR}× dose rate (no real space-weather data), the suit leak assumes only the reserve is left, the injured crew member halves the walking speed.</li>
+   <li>Safe range: suit time minus reserve, minus the mission time so far, minus the walk home from each cell.</li>
    <li>Stop names and tasks are our mission design. They do not describe Curiosity results.</li>
    <li>Sun: declination from the season (Ls ${S.sunSite.ls}° in the latest REMS report) and Mars’ 25.19° axial tilt; the hour angle is scaled so the sun crosses the horizon at the REMS sunrise and sunset times. Shadows are cast by the 2 m elevation model inside the box only – hills outside it cast none, and no dust or sky brightness is modelled.</li>
    <li>Cuff checklist: headings are straight-line simplifications of the planned path; crew rules on the contingency card are ours.</li>
@@ -630,6 +690,7 @@ function updateFollow() {
   if (S.ev) { $('#scrub').value = S.t / S.ev.time * 1000; $('#clock').textContent = `${fmtT(S.t)} / ${fmtT(S.ev.time)} h`; }
   else $('#clock').textContent = '—';
   updateSun(); drawProfile(); updateHud(st);
+  if (S.layer === 'range' && Math.abs(S.t - (S.rangeT ?? -1e9)) > 120) drawOverlay();
 }
 
 function setMode(mode) {
@@ -686,8 +747,8 @@ function updateHud(st) {
     $('#hNextInfo').textContent = `${Math.round(next.dist - st.dist)} m · ETA ${fmtMin(next.arrive - S.t)}`;
   } else { ph.hidden = true; $('#hNextLbl').textContent = 'STATUS'; $('#hNext').textContent = 'At habitat'; $('#hNextInfo').textContent = 'EVA complete'; }
   const sun = S.sunNow, sunDeg = sun ? sun.el * 180 / Math.PI : 0;
-  $('#hTerrain').innerHTML = `<span class="${['ok', 'warnc', 'bad'][st.cls]}">${['GO', 'CAUTION', 'NO-GO'][st.cls]}</span> · slope ${st.slope.toFixed(0)}°<br><span class="small">${sunDeg <= 0 ? 'SUN DOWN' : `SUN ${sunDeg.toFixed(0)}° · ${sun && inShadow(S.shGrid, st.x, st.y, sun) ? 'IN SHADE' : 'LIT'}`}</span>`;
-  const stormDose = S.storm ? (S.storm.wb / 3600) * P.doseRate * STORM_FACTOR : 0;
+  $('#hTerrain').innerHTML = `<span class="${['ok', 'warnc', 'bad'][st.cls]}">${['GO', 'CAUTION', 'NO-GO'][st.cls]}</span> · slope ${st.slope.toFixed(0)}°<br><span class="small">${sunDeg <= 0 ? 'SUN DOWN' : `SUN ${sunDeg.toFixed(0)}° · ${sun && inShadow(S.shGrid, st.x, st.y, sun) ? 'IN SHADE' : 'LIT'}`}${ev.near && ev.near[st.i] ? ' · <span class="warnc">NO-GO CLOSE</span>' : ''}</span>`;
+  const stormDose = S.storm && S.storm.type === 'storm' ? (S.storm.wb / 3600) * P.doseRate * STORM_FACTOR : 0;
   $('#hDose').textContent = `dose ${(S.t / 3600 * P.doseRate + stormDose).toFixed(3)} mSv`;
   $('#hWb').textContent = isFinite(st.wb) ? fmtMin(st.wb) : 'n/a';
   const margin = ev.limit - ev.reserve - S.t - st.wb;
@@ -703,11 +764,30 @@ function setStorm(on) {
   setPlaying(false);
   let d = 0; for (let i = 1; i < path.length; i++) { const [x0, y0] = P.xy(path[i - 1]), [x1, y1] = P.xy(path[i]); d += Math.hypot(x1 - x0, y1 - y0); }
   const wb = P.walkback[k];
-  S.storm = { wb, d }; btn.classList.add('on');
+  const type = $('#drillSel').value, Pm = P.params, ev = S.ev;
+  S.storm = { wb, d, type }; btn.classList.add('on');
   S.scene.setEscape(path, (c) => P.xy(c));
-  const dose = wb / 3600 * P.params.doseRate * STORM_FACTOR, stay = (S.ev.time - S.t) / 3600 * P.params.doseRate * STORM_FACTOR;
+  const way = `habitat ${Math.round(d)} m away`;
+  let head, body;
+  if (type === 'leak') {
+    // assumption of the drill: the main supply is lost, only the reserve remains
+    const spare = Pm.reserveMin * 60 - wb;
+    head = `DRILL · SUIT LEAK — only the ${Pm.reserveMin} min reserve is left · ${way} · ${fmtMin(wb)} on foot`;
+    body = spare >= 0 ? `You reach the hatch with ${fmtMin(spare)} to spare. Fastest safe way back is shown in red.`
+      : `NOT survivable from here: the walk back is ${fmtMin(-spare)} longer than the reserve. Plan inside the white line of the “Safe range” layer, or raise the reserve.`;
+  } else if (type === 'injury') {
+    // assumption of the drill: an injured crew member halves the walking speed
+    const spare = ev.limit - S.t - 2 * wb;
+    head = `DRILL · INJURED CREW MEMBER — half walking speed · ${way} · ${fmtMin(2 * wb)} on foot`;
+    body = spare >= 0 ? `Suit time left at the hatch: ${fmtT(spare)} h${spare < ev.reserve ? ' – this eats into the reserve' : ''}. Fastest safe way back is shown in red.`
+      : `NOT enough suit time: ${fmtMin(-spare)} short even with the reserve. Turn back earlier on this route.`;
+  } else {
+    const dose = wb / 3600 * Pm.doseRate * STORM_FACTOR, stay = (ev.time - S.t) / 3600 * Pm.doseRate * STORM_FACTOR;
+    head = `DRILL · SIMULATED SOLAR PARTICLE EVENT — abort to habitat · ${way} · ${fmtMin(wb)} on foot`;
+    body = `Fastest safe way back is shown in red. Hypothetical ${STORM_FACTOR}× dose rate: ${dose.toFixed(3)} mSv on the way back instead of ${stay.toFixed(3)} mSv if the EVA continued.`;
+  }
   a.hidden = false;
-  a.innerHTML = `DRILL · SIMULATED SOLAR PARTICLE EVENT — abort to habitat: ${Math.round(d)} m · ${fmtMin(wb)}<small>Fastest safe way back is shown in red. Hypothetical ${STORM_FACTOR}× dose rate: ${dose.toFixed(3)} mSv on the way back instead of ${stay.toFixed(3)} mSv if the EVA continued.</small>`;
+  a.innerHTML = `${head}<small>${body}</small>`;
   updateHud(st);
 }
 
